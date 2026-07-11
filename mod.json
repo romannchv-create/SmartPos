@@ -8,11 +8,15 @@
     },
     "id": "crimeshappy.smartpos",
     "name": "SmartPos",
-    "version": "1.0.0",
+    "version": "v1.0.0",
     "developer": "Crimeshappy",
-    "description": "Automatically sets up your StartPos trigger based on the previous portals, so you don't have to.\n\n• Just place or move your StartPos and watch the magic happen!",
+    "description": "Automatically sets your StartPos trigger based on the previous portals so you don't have to.",
+    "repository": "https://github.com/romannchv-create/SmartPos",
+    "resources": {
+        "icon": "resources/logo.png"
+    },
     "dependencies": {
-        "geode.node-ids": ">=v1.23.3"
+        "geode.node-ids": ">=1.23.3"
     },
     "settings": {
         "enabled": {
