@@ -1,0 +1,25 @@
+{
+    "geode": "5.7.1",
+    "gd": {
+        "win": "2.2081",
+        "android": "2.2081",
+        "mac": "2.2081",
+        "ios": "2.2081"
+    },
+    "id": "crimeshappy.smartpos",
+    "name": "SmartPos",
+    "version": "1.0.0",
+    "developer": "Crimeshappy",
+    "description": "Automatically sets up your StartPos trigger based on the previous portals, so you don't have to.\n\n• Just place or move your StartPos and watch the magic happen!",
+    "dependencies": {
+        "geode.node-ids": ">=v1.23.3"
+    },
+    "settings": {
+        "enabled": {
+            "type": "bool",
+            "name": "Enable SmartPos",
+            "default": true,
+            "description": "Turns SmartPos on or off."
+        }
+    }
+}
