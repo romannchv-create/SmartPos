@@ -12,18 +12,17 @@
     "developer": "Crimeshappy",
     "description": "Automatically sets your StartPos trigger based on the previous portals so you don't have to.",
     "repository": "https://github.com/romannchv-create/SmartPos",
+
+    "tags": [
+        "utility",
+        "editor"
+    ],
+
     "resources": {
         "icon": "logo.png"
     },
+
     "dependencies": {
         "geode.node-ids": ">=1.23.3"
-    },
-    "settings": {
-        "enabled": {
-            "type": "bool",
-            "name": "Enable SmartPos",
-            "default": true,
-            "description": "Turns SmartPos on or off."
-        }
     }
 }
