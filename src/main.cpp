@@ -2,6 +2,8 @@
 #include <Geode/modify/EditorUI.hpp>
 #include <Geode/binding/StartPosObject.hpp>
 #include <Geode/binding/LevelSettingsObject.hpp>
+#include <vector>
+#include <algorithm>
 
 using namespace geode::prelude;
 
@@ -15,19 +17,19 @@ class $modify(SmartPosEditorUI, EditorUI) {
     };
 
     struct Fields {
-       StartPosObject* pendingStartPos = nullptr;
+        StartPosObject* pendingStartPos = nullptr;
 
-       int lastMode = 0;
-       bool lastFlip = false;
-       bool lastMini = false;
-       int lastSpeed = 1;
+        int lastMode = 0;
+        bool lastFlip = false;
+        bool lastMini = false;
+        int lastSpeed = 1;
 
-       bool hasPreviousState = false;
+        bool hasPreviousState = false;
     };
+
 
     bool isPortal(int id) {
         return
-            // Gamemodes
             id == 12 ||
             id == 13 ||
             id == 47 ||
@@ -37,21 +39,19 @@ class $modify(SmartPosEditorUI, EditorUI) {
             id == 1331 ||
             id == 1933 ||
 
-            // Gravity
             id == 10 ||
             id == 11 ||
 
-            // Mini
             id == 99 ||
             id == 101 ||
 
-            // Speed
             id == 200 ||
             id == 201 ||
             id == 202 ||
             id == 203 ||
             id == 1334;
     }
+
 
     void scheduleScan(StartPosObject* start, float delay) {
 
@@ -74,6 +74,7 @@ class $modify(SmartPosEditorUI, EditorUI) {
         );
     }
 
+
     void moveObject(GameObject* object, CCPoint offset) {
 
         EditorUI::moveObject(object, offset);
@@ -83,9 +84,9 @@ class $modify(SmartPosEditorUI, EditorUI) {
         if (!start)
             return;
 
-        // Wait until the player stops moving it.
         scheduleScan(start, 1.5f);
     }
+
 
     void onCreateObject(int id) {
 
@@ -94,14 +95,17 @@ class $modify(SmartPosEditorUI, EditorUI) {
         if (id != 31)
             return;
 
+
         auto objects = m_editorLayer->getAllObjects();
 
         if (!objects)
             return;
 
+
         StartPosObject* newest = nullptr;
 
         float greatestX = -FLT_MAX;
+
 
         for (auto obj : CCArrayExt<GameObject*>(objects)) {
 
@@ -110,233 +114,205 @@ class $modify(SmartPosEditorUI, EditorUI) {
             if (!start)
                 continue;
 
-            if (start->getPositionX() > greatestX) {
 
+            if (start->getPositionX() > greatestX) {
                 greatestX = start->getPositionX();
                 newest = start;
             }
         }
 
-        if (newest) {
-            // Placement updates immediately.
+
+        if (newest)
             scheduleScan(newest, 0.f);
-        }
     }
+
 
     void scanStartPos(float) {
+        
+        auto start = m_fields->pendingStartPos;
 
-    auto start = m_fields->pendingStartPos;
+        if (!start)
+            return;
 
-    if (!start)
-        return;
 
-    auto settings = start->m_startSettings;
+        auto settings = start->m_startSettings;
 
-    if (!settings)
-        return;
+        if (!settings)
+            return;
 
-    StartState state;
 
-    float startX = start->getPositionX();
+        StartState state;
 
-    auto objects = m_editorLayer->getAllObjects();
 
-    if (!objects)
-        return;
+        float startX = start->getPositionX();
 
-    // Distance from StartPos to the closest portal we've found.
-    float closestMode = FLT_MAX;
-    float closestGravity = FLT_MAX;
-    float closestMini = FLT_MAX;
-    float closestSpeed = FLT_MAX;
 
-    for (auto obj : CCArrayExt<GameObject*>(objects)) {
+        auto objects = m_editorLayer->getAllObjects();
 
-        if (!obj)
-            continue;
+        if (!objects)
+            return;
 
-        if (!isPortal(obj->m_objectID))
-            continue;
 
-        // Ignore portals after the StartPos.
-        if (obj->getPositionX() > startX)
-            continue;
+        std::vector<GameObject*> portals;
 
-        float dist = startX - obj->getPositionX();
 
-        switch (obj->m_objectID) {
+        for (auto obj : CCArrayExt<GameObject*>(objects)) {
 
-        // ---------------- Gamemodes ----------------
+            if (!obj)
+                continue;
 
-        case 12:
-            if (dist < closestMode) {
-                closestMode = dist;
-                state.mode = 0;
-            }
-            break;
 
-        case 13:
-            if (dist < closestMode) {
-                closestMode = dist;
-                state.mode = 1;
-            }
-            break;
+            if (!isPortal(obj->m_objectID))
+                continue;
 
-        case 47:
-            if (dist < closestMode) {
-                closestMode = dist;
-                state.mode = 2;
-            }
-            break;
 
-        case 111:
-            if (dist < closestMode) {
-                closestMode = dist;
-                state.mode = 3;
-            }
-            break;
-
-        case 660:
-            if (dist < closestMode) {
-                closestMode = dist;
-                state.mode = 4;
-            }
-            break;
-
-        case 745:
-            if (dist < closestMode) {
-                closestMode = dist;
-                state.mode = 5;
-            }
-            break;
-
-        case 1331:
-            if (dist < closestMode) {
-                closestMode = dist;
-                state.mode = 6;
-            }
-            break;
-
-        case 1933:
-            if (dist < closestMode) {
-                closestMode = dist;
-                state.mode = 7;
-            }
-            break;
-
-        // ---------------- Gravity ----------------
-
-        case 10:
-            if (dist < closestGravity) {
-                closestGravity = dist;
-                state.flip = false;
-            }
-            break;
-
-        case 11:
-            if (dist < closestGravity) {
-                closestGravity = dist;
-                state.flip = true;
-            }
-            break;
-
-        // ---------------- Mini ----------------
-
-        case 99:
-            if (dist < closestMini) {
-                closestMini = dist;
-                state.mini = false;
-            }
-            break;
-
-        case 101:
-            if (dist < closestMini) {
-                closestMini = dist;
-                state.mini = true;
-            }
-            break;
-
-        // ---------------- Speed ----------------
-
-        case 200:
-            if (dist < closestSpeed) {
-                closestSpeed = dist;
-                state.speed = 0;
-            }
-            break;
-
-        case 201:
-            if (dist < closestSpeed) {
-                closestSpeed = dist;
-                state.speed = 1;
-            }
-            break;
-
-        case 202:
-            if (dist < closestSpeed) {
-                closestSpeed = dist;
-                state.speed = 2;
-            }
-            break;
-
-        case 203:
-            if (dist < closestSpeed) {
-                closestSpeed = dist;
-                state.speed = 3;
-            }
-            break;
-
-        case 1334:
-            if (dist < closestSpeed) {
-                closestSpeed = dist;
-                state.speed = 4;
-            }
-            break;
+            if (obj->getPositionX() <= startX + 10.f)
+                portals.push_back(obj);
         }
-    }
+
+
+        std::sort(
+            portals.begin(),
+            portals.end(),
+            [](GameObject* a, GameObject* b) {
+                return a->getPositionX() < b->getPositionX();
+            }
+        );
+
+
+        for (auto portal : portals) {
+
+            switch (portal->m_objectID) {
+
+                case 12:
+                    state.mode = 0;
+                    break;
+
+                case 13:
+                    state.mode = 1;
+                    break;
+
+                case 47:
+                    state.mode = 2;
+                    break;
+
+                case 111:
+                    state.mode = 3;
+                    break;
+
+                case 660:
+                    state.mode = 4;
+                    break;
+
+                case 745:
+                    state.mode = 5;
+                    break;
+
+                case 1331:
+                    state.mode = 6;
+                    break;
+
+                case 1933:
+                    state.mode = 7;
+                    break;
+
+
+                case 10:
+                    state.flip = false;
+                    break;
+
+                case 11:
+                    state.flip = true;
+                    break;
+
+
+                case 99:
+                    state.mini = false;
+                    break;
+
+                case 101:
+                    state.mini = true;
+                    break;
+
+
+                case 200:
+                    state.speed = 0;
+                    break;
+
+                case 201:
+                    state.speed = 1;
+                    break;
+
+                case 202:
+                    state.speed = 2;
+                    break;
+
+                case 203:
+                    state.speed = 3;
+                    break;
+
+                case 1334:
+                    state.speed = 4;
+                    break;
+            }
+        }
+
 
         bool changed =
-          !m_fields->hasPreviousState ||
-          m_fields->lastMode != state.mode ||
-          m_fields->lastFlip != state.flip ||
-          m_fields->lastMini != state.mini ||
-          m_fields->lastSpeed != state.speed;
+            !m_fields->hasPreviousState ||
+            m_fields->lastMode != state.mode ||
+            m_fields->lastFlip != state.flip ||
+            m_fields->lastMini != state.mini ||
+            m_fields->lastSpeed != state.speed;
 
-    switch (state.speed) {
 
-        case 0:
-            settings->m_startSpeed = Speed::Slow;
-            break;
+        settings->m_startMode = state.mode;
+        settings->m_startMini = state.mini;
+        settings->m_isFlipped = state.flip;
 
-        case 1:
-            settings->m_startSpeed = Speed::Normal;
-            break;
 
-        case 2:
-            settings->m_startSpeed = Speed::Fast;
-            break;
+        switch (state.speed) {
 
-        case 3:
-            settings->m_startSpeed = Speed::Faster;
-            break;
+            case 0:
+                settings->m_startSpeed = Speed::Slow;
+                break;
 
-        case 4:
-            settings->m_startSpeed = Speed::Fastest;
-            break;
+            case 1:
+                settings->m_startSpeed = Speed::Normal;
+                break;
+
+            case 2:
+                settings->m_startSpeed = Speed::Fast;
+                break;
+
+            case 3:
+                settings->m_startSpeed = Speed::Faster;
+                break;
+
+            case 4:
+                settings->m_startSpeed = Speed::Fastest;
+                break;
+        }
+
+
+        start->setSettings(settings);
+
+
+        if (changed && m_fields->hasPreviousState) {
+
+            Notification::create(
+                "SmartPos updated"
+            )->show();
+        }
+
+
+        m_fields->lastMode = state.mode;
+        m_fields->lastFlip = state.flip;
+        m_fields->lastMini = state.mini;
+        m_fields->lastSpeed = state.speed;
+
+        m_fields->hasPreviousState = true;
+
+        m_fields->pendingStartPos = nullptr;
     }
-
-    if (changed && m_fields->hasPreviousState) {
-        Notification::create(
-            "StartPos changed"
-        )->show();
-    }
-
-    m_fields->lastMode = state.mode;
-    m_fields->lastFlip = state.flip;
-    m_fields->lastMini = state.mini;
-    m_fields->lastSpeed = state.speed;
-    m_fields->hasPreviousState = true;
-
-    m_fields->pendingStartPos = nullptr;
-}
 };
