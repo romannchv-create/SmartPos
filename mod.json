@@ -8,7 +8,7 @@
     },
     "id": "crimeshappy.smartpos",
     "name": "SmartPos",
-    "version": "v1.0.1",
+    "version": "1.0.0",
     "developer": "Crimeshappy",
     "description": "Automatically sets your StartPos trigger based on the previous portals so you don't have to.",
     "repository": "https://github.com/romannchv-create/SmartPos",
