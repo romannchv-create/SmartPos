@@ -9,7 +9,7 @@ using namespace geode::prelude;
 
 class $modify(SmartPosEditorUI, EditorUI) {
 
-    struct StartState {
+    struct PlayerState {
         int mode = 0;
         bool flip = false;
         bool mini = false;
@@ -28,7 +28,7 @@ class $modify(SmartPosEditorUI, EditorUI) {
     };
 
 
-    bool isPortal(int id) {
+    bool isGameplayObject(int id) {
         return
             id == 12 ||
             id == 13 ||
@@ -41,6 +41,7 @@ class $modify(SmartPosEditorUI, EditorUI) {
 
             id == 10 ||
             id == 11 ||
+            id == 2926 ||
 
             id == 99 ||
             id == 101 ||
@@ -49,7 +50,9 @@ class $modify(SmartPosEditorUI, EditorUI) {
             id == 201 ||
             id == 202 ||
             id == 203 ||
-            id == 1334;
+            id == 1334 ||
+
+            id == 67;
     }
 
 
@@ -141,7 +144,7 @@ class $modify(SmartPosEditorUI, EditorUI) {
             return;
 
 
-        StartState state;
+        PlayerState state;
 
 
         float startX = start->getPositionX();
@@ -153,7 +156,7 @@ class $modify(SmartPosEditorUI, EditorUI) {
             return;
 
 
-        std::vector<GameObject*> portals;
+        std::vector<GameObject*> gameplayObjects;
 
 
         for (auto obj : CCArrayExt<GameObject*>(objects)) {
@@ -162,25 +165,25 @@ class $modify(SmartPosEditorUI, EditorUI) {
                 continue;
 
 
-            if (!isPortal(obj->m_objectID))
+            if (!isGameplayObject(obj->m_objectID))
                 continue;
 
 
             if (obj->getPositionX() <= startX + 10.f)
-                portals.push_back(obj);
+                gameplayObjects.push_back(obj);
         }
 
 
         std::sort(
-            portals.begin(),
-            portals.end(),
+            gameplayObjects.begin(),
+            gameplayObjects.end(),
             [](GameObject* a, GameObject* b) {
                 return a->getPositionX() < b->getPositionX();
             }
         );
 
 
-        for (auto portal : portals) {
+        for (auto portal : gameplayObjects) {
 
             switch (portal->m_objectID) {
 
@@ -225,6 +228,10 @@ class $modify(SmartPosEditorUI, EditorUI) {
                     state.flip = true;
                     break;
 
+                case 2926:
+                state.flip = !state.flip;
+                break;
+
 
                 case 99:
                     state.mini = false;
@@ -254,6 +261,11 @@ class $modify(SmartPosEditorUI, EditorUI) {
                 case 1334:
                     state.speed = 4;
                     break;
+                
+
+                case 67:
+                state.flip = !state.flip;
+                break;
             }
         }
 
